@@ -1,0 +1,349 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Internal API &mdash; P4P 0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="P4P 0 documentation" href="index.html" />
+    <link rel="prev" title="RPC Server Helpers" href="rpc.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="rpc.html" title="RPC Server Helpers"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">P4P 0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="internal-api">
+<h1>Internal API<a class="headerlink" href="#internal-api" title="Permalink to this headline">¶</a></h1>
+<p>This section is intended to help P4P devlopers.
+The API described is _not_ considered a public or stable API.
+It may change without notice.</p>
+<span class="target" id="module-p4p._p4p"></span><dl class="class">
+<dt id="p4p._p4p.Array">
+<em class="property">class </em><tt class="descclassname">p4p._p4p.</tt><tt class="descname">Array</tt><a class="headerlink" href="#p4p._p4p.Array" title="Permalink to this definition">¶</a></dt>
+<dd><p>Holder for a shared_array&lt;&gt; being shared w/ numpy</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="p4p._p4p.RPCReply">
+<em class="property">class </em><tt class="descclassname">p4p._p4p.</tt><tt class="descname">RPCReply</tt><a class="headerlink" href="#p4p._p4p.RPCReply" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="class">
+<dt id="p4p._p4p.Type">
+<em class="property">class </em><tt class="descclassname">p4p._p4p.</tt><tt class="descname">Type</tt><a class="headerlink" href="#p4p._p4p.Type" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="class">
+<dt id="p4p._p4p.Value">
+<em class="property">class </em><tt class="descclassname">p4p._p4p.</tt><tt class="descname">Value</tt><a class="headerlink" href="#p4p._p4p.Value" title="Permalink to this definition">¶</a></dt>
+<dd><p>Value(type, value=None)</p>
+<p>Structured value container. Supports dict-list and object-list access</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>type</strong> (<em>Type</em>) &#8211; A <a class="reference internal" href="#p4p._p4p.Type" title="p4p._p4p.Type"><tt class="xref py py-class docutils literal"><span class="pre">Type</span></tt></a> describing the structure</li>
+<li><strong>value</strong> (<em>dict</em>) &#8211; Initial values to populate the Value</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="class">
+<dt id="p4p._p4p.Channel">
+<em class="property">class </em><tt class="descclassname">p4p._p4p.</tt><tt class="descname">Channel</tt><a class="headerlink" href="#p4p._p4p.Channel" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="p4p._p4p.Channel.close">
+<tt class="descname">close</tt><big>(</big><big>)</big><a class="headerlink" href="#p4p._p4p.Channel.close" title="Permalink to this definition">¶</a></dt>
+<dd><p>Dispose of channel.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="p4p._p4p.Channel.get">
+<tt class="descname">get</tt><big>(</big><em>callback</em>, <em>request=None</em><big>)</big><a class="headerlink" href="#p4p._p4p.Channel.get" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initiate a new get() operation.
+The provided callback must be a callable object, which will be called with a single argument.
+Either a Value or an Exception.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="p4p._p4p.Channel.getName">
+<tt class="descname">getName</tt><big>(</big><big>)</big><a class="headerlink" href="#p4p._p4p.Channel.getName" title="Permalink to this definition">¶</a></dt>
+<dd><p>Channel name (aka PV name)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="p4p._p4p.Channel.monitor">
+<tt class="descname">monitor</tt><big>(</big><em>callback</em>, <em>request=None</em><big>)</big><a class="headerlink" href="#p4p._p4p.Channel.monitor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initiate a new rpc() operation.
+The provided callback must be a callable object, which will be called with a single argument.
+Either None or an Exception.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="p4p._p4p.Channel.put">
+<tt class="descname">put</tt><big>(</big><em>callback</em>, <em>value</em>, <em>request=None</em><big>)</big><a class="headerlink" href="#p4p._p4p.Channel.put" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initiate a new put() operation.
+The provided callback must be a callable object, which will be called with a single argument.
+Either None or an Exception.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="p4p._p4p.Channel.rpc">
+<tt class="descname">rpc</tt><big>(</big><em>callback</em>, <em>value</em>, <em>request=None</em><big>)</big><a class="headerlink" href="#p4p._p4p.Channel.rpc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initiate a new rpc() operation.
+The provided callback must be a callable object, which will be called with a single argument.
+Either None or an Exception.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="p4p._p4p.Context">
+<em class="property">class </em><tt class="descclassname">p4p._p4p.</tt><tt class="descname">Context</tt><a class="headerlink" href="#p4p._p4p.Context" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="p4p._p4p.Context.channel">
+<tt class="descname">channel</tt><big>(</big><big>)</big><a class="headerlink" href="#p4p._p4p.Context.channel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a Channel</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="p4p._p4p.Context.close">
+<tt class="descname">close</tt><big>(</big><big>)</big><a class="headerlink" href="#p4p._p4p.Context.close" title="Permalink to this definition">¶</a></dt>
+<dd><p>Close this Context</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="p4p._p4p.Context.makeRequest">
+<tt class="descname">makeRequest</tt><big>(</big><em>&quot;field(value)&quot;</em><big>)</big><a class="headerlink" href="#p4p._p4p.Context.makeRequest" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse pvRequest string</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="p4p._p4p.Context.name">
+<tt class="descname">name</tt><a class="headerlink" href="#p4p._p4p.Context.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Provider name</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="p4p._p4p.Context.providers">
+<tt class="descname">providers</tt><big>(</big><big>)</big> &rarr; ['name', ...]<a class="headerlink" href="#p4p._p4p.Context.providers" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">A list of all currently registered provider names.</td>
+</tr>
+</tbody>
+</table>
+<p>A staticmethod.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="p4p._p4p.Context.set_debug">
+<tt class="descname">set_debug</tt><big>(</big><em>lvl</em><big>)</big><a class="headerlink" href="#p4p._p4p.Context.set_debug" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set PVA debug level</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="p4p._p4p.Operation">
+<em class="property">class </em><tt class="descclassname">p4p._p4p.</tt><tt class="descname">Operation</tt><a class="headerlink" href="#p4p._p4p.Operation" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="p4p._p4p.Operation.cancel">
+<tt class="descname">cancel</tt><big>(</big><big>)</big><a class="headerlink" href="#p4p._p4p.Operation.cancel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Cancel pending operation.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="p4p._p4p.Server">
+<em class="property">class </em><tt class="descclassname">p4p._p4p.</tt><tt class="descname">Server</tt><a class="headerlink" href="#p4p._p4p.Server" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="p4p._p4p.Server.conf">
+<tt class="descname">conf</tt><big>(</big><em>server=True</em>, <em>client=False</em><big>)</big><a class="headerlink" href="#p4p._p4p.Server.conf" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return actual Server configuration.  Use client and/or server key names.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="p4p._p4p.Server.run">
+<tt class="descname">run</tt><big>(</big><big>)</big><a class="headerlink" href="#p4p._p4p.Server.run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run server (blocking)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="p4p._p4p.Server.stop">
+<tt class="descname">stop</tt><big>(</big><big>)</big><a class="headerlink" href="#p4p._p4p.Server.stop" title="Permalink to this definition">¶</a></dt>
+<dd><p>break from blocking run()</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="p4p._p4p.Subscription">
+<em class="property">class </em><tt class="descclassname">p4p._p4p.</tt><tt class="descname">Subscription</tt><a class="headerlink" href="#p4p._p4p.Subscription" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="p4p._p4p.Subscription.close">
+<tt class="descname">close</tt><big>(</big><big>)</big><a class="headerlink" href="#p4p._p4p.Subscription.close" title="Permalink to this definition">¶</a></dt>
+<dd><p>Cancel subscription.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="p4p._p4p.Subscription.done">
+<tt class="descname">done</tt><big>(</big><big>)</big><a class="headerlink" href="#p4p._p4p.Subscription.done" title="Permalink to this definition">¶</a></dt>
+<dd><p>Has the last subscription update been received?  Check after pop() returns None.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="p4p._p4p.Subscription.empty">
+<tt class="descname">empty</tt><big>(</big><big>)</big><a class="headerlink" href="#p4p._p4p.Subscription.empty" title="Permalink to this definition">¶</a></dt>
+<dd><p>Would pop() return a value?</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="p4p._p4p.Subscription.pop">
+<tt class="descname">pop</tt><big>(</big><big>)</big><a class="headerlink" href="#p4p._p4p.Subscription.pop" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pull an entry from the subscription queue.  return None if empty</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="p4p._p4p.clearProviders">
+<tt class="descclassname">p4p._p4p.</tt><tt class="descname">clearProviders</tt><big>(</big><big>)</big><a class="headerlink" href="#p4p._p4p.clearProviders" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove all Server Channel providers</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="p4p._p4p.installProvider">
+<tt class="descclassname">p4p._p4p.</tt><tt class="descname">installProvider</tt><big>(</big><em>&quot;name&quot;</em>, <em>provider</em><big>)</big><a class="headerlink" href="#p4p._p4p.installProvider" title="Permalink to this definition">¶</a></dt>
+<dd><p>Install a new Server Channel provider</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="p4p._p4p.pvaVersion">
+<tt class="descclassname">p4p._p4p.</tt><tt class="descname">pvaVersion</tt><big>(</big><big>)</big><a class="headerlink" href="#p4p._p4p.pvaVersion" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">tuple of version number components for PVData</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="p4p._p4p.pvdVersion">
+<tt class="descclassname">p4p._p4p.</tt><tt class="descname">pvdVersion</tt><big>(</big><big>)</big><a class="headerlink" href="#p4p._p4p.pvdVersion" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">tuple of version number components for PVData</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="p4p._p4p.removeProvider">
+<tt class="descclassname">p4p._p4p.</tt><tt class="descname">removeProvider</tt><big>(</big><em>&quot;name&quot;</em><big>)</big><a class="headerlink" href="#p4p._p4p.removeProvider" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove a previously added Server Channel provider</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="rpc.html"
+                        title="previous chapter">RPC Server Helpers</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/internal.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="rpc.html" title="RPC Server Helpers"
+             >previous</a> |</li>
+        <li><a href="index.html">P4P 0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2017, Michael Davidsaver.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

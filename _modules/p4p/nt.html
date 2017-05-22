@@ -1,0 +1,280 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>p4p.nt &mdash; P4P 0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="P4P 0 documentation" href="../../index.html" />
+    <link rel="up" title="p4p" href="../p4p.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">P4P 0 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../p4p.html" accesskey="U">p4p</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for p4p.nt</h1><div class="highlight"><pre>
+<span class="kn">import</span> <span class="nn">logging</span><span class="o">,</span> <span class="nn">sys</span>
+<span class="n">_log</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">izip</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="n">izip</span> <span class="o">=</span> <span class="nb">zip</span>
+
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">OrderedDict</span>
+<span class="kn">from</span> <span class="nn">operator</span> <span class="kn">import</span> <span class="n">itemgetter</span>
+<span class="kn">from</span> <span class="nn">..wrapper</span> <span class="kn">import</span> <span class="n">Type</span><span class="p">,</span> <span class="n">Value</span>
+<span class="kn">from</span> <span class="nn">.common</span> <span class="kn">import</span> <span class="n">timeStamp</span><span class="p">,</span> <span class="n">alarm</span>
+<span class="kn">from</span> <span class="nn">.scalar</span> <span class="kn">import</span> <span class="n">NTScalar</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s">&#39;NTScalar&#39;</span><span class="p">,</span>
+    <span class="s">&#39;NTMultiChannel&#39;</span><span class="p">,</span>
+    <span class="s">&#39;NTTable&#39;</span><span class="p">,</span>
+<span class="p">]</span>
+
+<span class="n">_default_unwrap</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">&quot;epics:nt/NTScalar:1.0&quot;</span><span class="p">:</span><span class="n">NTScalar</span><span class="o">.</span><span class="n">unwrap</span><span class="p">,</span>
+    <span class="s">&quot;epics:nt/NTScalarArray:1.0&quot;</span><span class="p">:</span><span class="n">NTScalar</span><span class="o">.</span><span class="n">unwrap</span><span class="p">,</span>
+<span class="p">}</span>
+<span class="n">_default_wrap</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">&quot;epics:nt/NTScalar:1.0&quot;</span><span class="p">:</span><span class="n">NTScalar</span><span class="o">.</span><span class="n">wrap</span><span class="p">,</span>
+    <span class="s">&quot;epics:nt/NTScalarArray:1.0&quot;</span><span class="p">:</span><span class="n">NTScalar</span><span class="o">.</span><span class="n">wrap</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="k">class</span> <span class="nc">NTMultiChannel</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="NTMultiChannel"><a class="viewcode-back" href="../../nt.html#p4p.nt.NTMultiChannel">[docs]</a>    <span class="sd">&quot;&quot;&quot;Describes a structure holding the equivalent of a number of NTScalar</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">Value</span> <span class="o">=</span> <span class="n">Value</span>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">buildType</span><span class="p">(</span><span class="n">valtype</span><span class="p">,</span> <span class="n">extra</span><span class="o">=</span><span class="p">[]):</span>
+<div class="viewcode-block" id="NTMultiChannel.buildType"><a class="viewcode-back" href="../../nt.html#p4p.nt.NTMultiChannel.buildType">[docs]</a>        <span class="sd">&quot;&quot;&quot;Build a Type</span>
+<span class="sd">        </span>
+<span class="sd">        :param str valtype: A type code to be used with the &#39;value&#39; field.  Must be an array</span>
+<span class="sd">        :param list extra: A list of tuples describing additional non-standard fields</span>
+<span class="sd">        :returns: A :py:class:`Type`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="n">valtype</span><span class="p">[:</span><span class="mi">1</span><span class="p">]</span><span class="o">==</span><span class="s">&#39;a&#39;</span><span class="p">,</span> <span class="s">&#39;valtype must be an array&#39;</span>
+        <span class="k">return</span> <span class="n">Type</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="s">&quot;epics:nt/NTMultiChannel:1.0&quot;</span><span class="p">,</span>
+                    <span class="n">spec</span><span class="o">=</span><span class="p">[</span>
+            <span class="p">(</span><span class="s">&#39;value&#39;</span><span class="p">,</span> <span class="n">valtype</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">&#39;channelName&#39;</span><span class="p">,</span> <span class="s">&#39;as&#39;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">&#39;descriptor&#39;</span><span class="p">,</span> <span class="s">&#39;s&#39;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">&#39;alarm&#39;</span><span class="p">,</span> <span class="n">alarm</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">&#39;timeStamp&#39;</span><span class="p">,</span> <span class="n">timeStamp</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">&#39;severity&#39;</span><span class="p">,</span> <span class="s">&#39;ai&#39;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">&#39;status&#39;</span><span class="p">,</span> <span class="s">&#39;ai&#39;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">&#39;message&#39;</span><span class="p">,</span> <span class="s">&#39;as&#39;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">&#39;secondsPastEpoch&#39;</span><span class="p">,</span> <span class="s">&#39;al&#39;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">&#39;nanoseconds&#39;</span><span class="p">,</span> <span class="s">&#39;ai&#39;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">&#39;userTag&#39;</span><span class="p">,</span> <span class="s">&#39;ai&#39;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">&#39;isConnected&#39;</span><span class="p">,</span> <span class="s">&#39;a?&#39;</span><span class="p">),</span>
+        <span class="p">]</span><span class="o">+</span><span class="n">extra</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">NTTable</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span></div></div>
+<div class="viewcode-block" id="NTTable"><a class="viewcode-back" href="../../nt.html#p4p.nt.NTTable">[docs]</a>    <span class="sd">&quot;&quot;&quot;A generic table</span>
+
+<span class="sd">    &gt;&gt;&gt; table = NTTable.buildType(columns=[</span>
+<span class="sd">        (&#39;columnA&#39;, &#39;ai&#39;),</span>
+<span class="sd">        (&#39;columnB&#39;, &#39;as&#39;),</span>
+<span class="sd">    ])</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">Value</span> <span class="o">=</span> <span class="n">Value</span>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">buildType</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[],</span> <span class="n">extra</span><span class="o">=</span><span class="p">[]):</span>
+<div class="viewcode-block" id="NTTable.buildType"><a class="viewcode-back" href="../../nt.html#p4p.nt.NTTable.buildType">[docs]</a>        <span class="sd">&quot;&quot;&quot;Build a table</span>
+<span class="sd">        </span>
+<span class="sd">        :param list columns: List of columns</span>
+<span class="sd">        :param list extra: A list of tuples describing additional non-standard fields</span>
+<span class="sd">        :returns: A :py:class:`Type`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">Type</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="s">&quot;epics:nt/NTTable:1.0&quot;</span><span class="p">,</span>
+                    <span class="n">spec</span><span class="o">=</span><span class="p">[</span>
+            <span class="p">(</span><span class="s">&#39;labels&#39;</span><span class="p">,</span> <span class="s">&#39;as&#39;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">&#39;value&#39;</span><span class="p">,</span> <span class="p">(</span><span class="s">&#39;S&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="n">columns</span><span class="p">)),</span>
+            <span class="p">(</span><span class="s">&#39;descriptor&#39;</span><span class="p">,</span> <span class="s">&#39;s&#39;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">&#39;alarm&#39;</span><span class="p">,</span> <span class="n">alarm</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">&#39;timeStamp&#39;</span><span class="p">,</span> <span class="n">timeStamp</span><span class="p">),</span>
+        <span class="p">]</span><span class="o">+</span><span class="n">extra</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="p">[],</span> <span class="n">extra</span><span class="o">=</span><span class="p">[]):</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">labels</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">C</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">col</span><span class="p">,</span> <span class="nb">type</span> <span class="ow">in</span> <span class="n">columns</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">type</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">==</span><span class="s">&#39;a&#39;</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;NTTable column types may not be array&quot;</span><span class="p">)</span>
+            <span class="n">C</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">col</span><span class="p">,</span> <span class="s">&#39;a&#39;</span><span class="o">+</span><span class="nb">type</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">labels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">col</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">buildType</span><span class="p">(</span><span class="n">C</span><span class="p">,</span> <span class="n">extra</span><span class="o">=</span><span class="n">extra</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">wrap</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">values</span><span class="p">):</span>
+<div class="viewcode-block" id="NTTable.wrap"><a class="viewcode-back" href="../../nt.html#p4p.nt.NTTable.wrap">[docs]</a>        <span class="sd">&quot;&quot;&quot;Pack an iterable of dict into a Value</span>
+
+<span class="sd">        &gt;&gt;&gt; T=NTTable([(&#39;A&#39;, &#39;ai&#39;), (&#39;B&#39;, &#39;as&#39;)])</span>
+<span class="sd">        &gt;&gt;&gt; V = T.wrap([</span>
+<span class="sd">            {&#39;A&#39;:42, &#39;B&#39;:&#39;one&#39;},</span>
+<span class="sd">            {&#39;A&#39;:43, &#39;B&#39;:&#39;two&#39;},</span>
+<span class="sd">        ])</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">cols</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">([(</span><span class="n">L</span><span class="p">,</span> <span class="p">[])</span> <span class="k">for</span> <span class="n">L</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">labels</span><span class="p">])</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c"># unzip list of dict</span>
+            <span class="k">for</span> <span class="n">V</span> <span class="ow">in</span> <span class="n">values</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">L</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">labels</span><span class="p">:</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">cols</span><span class="p">[</span><span class="n">L</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">V</span><span class="p">[</span><span class="n">L</span><span class="p">])</span>
+                    <span class="k">except</span> <span class="p">(</span><span class="ne">IndexError</span><span class="p">,</span> <span class="ne">KeyError</span><span class="p">):</span>
+                        <span class="k">pass</span>
+            <span class="c"># allow omit empty columns</span>
+            <span class="k">for</span> <span class="n">L</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">labels</span><span class="p">:</span>
+                <span class="n">V</span> <span class="o">=</span> <span class="n">cols</span><span class="p">[</span><span class="n">L</span><span class="p">]</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">V</span><span class="p">)</span><span class="o">==</span><span class="mi">0</span><span class="p">:</span>
+                    <span class="k">del</span> <span class="n">cols</span><span class="p">[</span><span class="n">L</span><span class="p">]</span>
+
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">Value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">type</span><span class="p">,</span> <span class="p">{</span>
+                    <span class="s">&#39;labels&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">labels</span><span class="p">,</span>
+                    <span class="s">&#39;value&#39;</span><span class="p">:</span> <span class="n">cols</span><span class="p">,</span>
+                <span class="p">})</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="n">_log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s">&quot;Failed to encode &#39;</span><span class="si">%s</span><span class="s">&#39; with </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">cols</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">labels</span><span class="p">)</span>
+                <span class="k">raise</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s">&#39;keys&#39;</span><span class="p">):</span>
+                <span class="n">_log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s">&quot;Columns&quot;</span><span class="p">)</span>
+            <span class="n">_log</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s">&quot;Failed to wrap: </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">values</span><span class="p">)</span>
+            <span class="k">raise</span>
+
+    <span class="nd">@staticmethod</span></div>
+    <span class="k">def</span> <span class="nf">unwrap</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+<div class="viewcode-block" id="NTTable.unwrap"><a class="viewcode-back" href="../../nt.html#p4p.nt.NTTable.unwrap">[docs]</a>        <span class="sd">&quot;&quot;&quot;Iterate an NTTable</span>
+<span class="sd">        </span>
+<span class="sd">        :returns: An iterator yielding an OrderedDict for each column</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">labels</span><span class="p">)</span><span class="o">==</span><span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="c"># build lists of column names, and value</span>
+        <span class="n">lbl</span><span class="p">,</span> <span class="n">cols</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">cname</span><span class="p">,</span> <span class="n">cval</span> <span class="ow">in</span> <span class="n">value</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">lbl</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cname</span><span class="p">)</span>
+            <span class="n">cols</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cval</span><span class="p">)</span>
+
+        <span class="c"># zip together column arrays to iterate over rows</span>
+        <span class="k">for</span> <span class="n">rval</span> <span class="ow">in</span> <span class="n">izip</span><span class="p">(</span><span class="o">*</span><span class="n">cols</span><span class="p">):</span>
+            <span class="c"># zip together column names and row values</span>
+            <span class="k">yield</span> <span class="n">OrderedDict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">lbl</span><span class="p">,</span> <span class="n">rval</span><span class="p">))</span>
+
+<span class="k">class</span> <span class="nc">NTURI</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span></div></div>
+<div class="viewcode-block" id="NTURI"><a class="viewcode-back" href="../../nt.html#p4p.nt.NTURI">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">buildType</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
+<div class="viewcode-block" id="NTURI.buildType"><a class="viewcode-back" href="../../nt.html#p4p.nt.NTURI.buildType">[docs]</a>        <span class="sd">&quot;&quot;&quot;Build NTURI</span>
+
+<span class="sd">        :param list args: A list of tuples of query argument name and type code.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">Type</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="s">&quot;epics:nt/NTURI:1.0&quot;</span><span class="p">,</span> <span class="n">spec</span><span class="o">=</span><span class="p">[</span>
+            <span class="p">(</span><span class="s">&#39;scheme&#39;</span><span class="p">,</span> <span class="s">&#39;s&#39;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">&#39;authority&#39;</span><span class="p">,</span> <span class="s">&#39;s&#39;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">&#39;path&#39;</span><span class="p">,</span> <span class="s">&#39;s&#39;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s">&#39;query&#39;</span><span class="p">,</span> <span class="p">(</span><span class="s">&#39;S&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="n">args</span><span class="p">)),</span>
+        <span class="p">])</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">args</span><span class="p">):</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">buildType</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">wrap</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">scheme</span><span class="o">=</span><span class="s">&#39;&#39;</span><span class="p">,</span> <span class="n">authority</span><span class="o">=</span><span class="s">&#39;&#39;</span><span class="p">):</span>
+<div class="viewcode-block" id="NTURI.wrap"><a class="viewcode-back" href="../../nt.html#p4p.nt.NTURI.wrap">[docs]</a>        <span class="k">return</span> <span class="n">Value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">type</span><span class="p">,</span> <span class="p">{</span>
+            <span class="s">&#39;scheme&#39;</span><span class="p">:</span><span class="n">scheme</span><span class="p">,</span>
+            <span class="s">&#39;authority&#39;</span><span class="p">:</span><span class="n">authority</span><span class="p">,</span>
+            <span class="s">&#39;path&#39;</span><span class="p">:</span><span class="n">path</span><span class="p">,</span>
+            <span class="s">&#39;query&#39;</span><span class="p">:</span> <span class="n">args</span><span class="p">,</span>
+        <span class="p">})</span>
+
+    <span class="n">_typeMap</span> <span class="o">=</span> <span class="p">{</span></div>
+        <span class="nb">float</span><span class="p">:</span> <span class="s">&#39;d&#39;</span><span class="p">,</span>
+        <span class="nb">int</span><span class="p">:</span> <span class="s">&#39;l&#39;</span><span class="p">,</span>
+        <span class="nb">bytes</span><span class="p">:</span> <span class="s">&#39;s&#39;</span><span class="p">,</span>
+    <span class="p">}</span>
+    <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">version_info</span><span class="o">&gt;=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">0</span><span class="p">):</span>
+        <span class="n">_typeMap</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;s&#39;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">_typeMap</span><span class="p">[</span><span class="nb">unicode</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;s&#39;</span>
+</pre></div></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">P4P 0 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../p4p.html" >p4p</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2017, Michael Davidsaver.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

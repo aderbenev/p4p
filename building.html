@@ -1,0 +1,221 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Building &mdash; P4P 0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="P4P 0 documentation" href="index.html" />
+    <link rel="next" title="Working with Value and Type" href="values.html" />
+    <link rel="prev" title="PVAccess for Python (P4P)" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="values.html" title="Working with Value and Type"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="PVAccess for Python (P4P)"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">P4P 0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="building">
+<h1>Building<a class="headerlink" href="#building" title="Permalink to this headline">¶</a></h1>
+<p>The P4P modules requires:</p>
+<ul class="simple">
+<li>Python 2.7 or &gt;=3.4</li>
+<li>numpy &gt;=1.6</li>
+<li>nosetests (to run unittests)</li>
+<li>EPICS Base &gt;= 3.14.12</li>
+<li>PVDataCPP (unreleased)</li>
+<li>PVAccessCPP (unreleased)</li>
+</ul>
+<div class="section" id="build-from-source">
+<h2>Build from source<a class="headerlink" href="#build-from-source" title="Permalink to this headline">¶</a></h2>
+<p>Fetch the source.:</p>
+<div class="highlight-python"><div class="highlight"><pre>git clone https://github.com/mdavidsaver/p4p.git
+cd p4p
+</pre></div>
+</div>
+<p>Setup on a Debian Linux host:</p>
+<div class="highlight-python"><div class="highlight"><pre>sudo apt-get install python2.7-dev python-numpy nose
+</pre></div>
+</div>
+<p>or with PIP:</p>
+<div class="highlight-python"><div class="highlight"><pre>pip install -r requirements-deb8.txt
+</pre></div>
+</div>
+<p>Set location of EPICS modules:</p>
+<div class="highlight-python"><div class="highlight"><pre>cat &lt;&lt;EOF &gt; configure/RELEASE.local
+PVACCESS=/path/to/pvAccessCPP
+PVDATA=/path/to/pvDataCPP
+EPICS_BASE=/path/to/epics-base
+EOF
+make
+</pre></div>
+</div>
+<p>By default P4P will build using &#8216;python&#8217; found in the system search path.
+To explicitly specify a particular version.:</p>
+<div class="highlight-python"><div class="highlight"><pre>make distclean
+make PYTHON=python3.4
+</pre></div>
+</div>
+<p>Alternately, the full path of the interpreter can be used.</p>
+<div class="highlight-python"><div class="highlight"><pre>make distclean
+make PYTHON=/usr/bin/python3.4
+</pre></div>
+</div>
+<p>For convenience PYTHON can also be set in configure/CONFIG_SITE</p>
+</div>
+<div class="section" id="multiple-python-versions">
+<h2>Multiple Python Versions<a class="headerlink" href="#multiple-python-versions" title="Permalink to this headline">¶</a></h2>
+<p>To build for multiple python versions it is necessary to do a partial clean before building
+another version.  This will not remove the final tree.</p>
+<div class="highlight-python"><div class="highlight"><pre>make PYTHON=python2.7
+make PYTHON=python2.7 clean
+make PYTHON=python3.4
+make PYTHON=python3,4 clean
+</pre></div>
+</div>
+</div>
+<div class="section" id="building-epics-dependencies">
+<h2>Building EPICS dependencies<a class="headerlink" href="#building-epics-dependencies" title="Permalink to this headline">¶</a></h2>
+<p>If the necessary EPICS modules are not present, then they may be built form source as well:</p>
+<div class="highlight-python"><div class="highlight"><pre>git clone https://github.com/epics-base/epics-base.git
+git clone https://github.com/epics-base/pvDataCPP.git
+git clone https://github.com/epics-base/pvAccessCPP.git
+cat &lt;&lt;EOF &gt;  CONFIG_SITE.local
+PVACCESS=$PWD/pvAccessCPP
+PVDATA=$PWD/pvDataCPP
+EPICS_BASE=$PWD/epics-base
+EOF
+make -C epics-base -j2
+make -C pvDataCPP -j2
+make -C pvAccessCPP -j2
+</pre></div>
+</div>
+<p>The ./build-deps.sh script in the source tree provides a working example.
+Be warned that this script is meant to be run in the travis-ci.org environment
+and is not meant to be run by end users.
+It will change files in your $HOME.</p>
+</div>
+<div class="section" id="cli-and-unittests">
+<h2>CLI and unittests<a class="headerlink" href="#cli-and-unittests" title="Permalink to this headline">¶</a></h2>
+<p>To run the unittests:</p>
+<div class="highlight-python"><div class="highlight"><pre>make nose
+</pre></div>
+</div>
+<p>or (change path as approriate):</p>
+<div class="highlight-python"><div class="highlight"><pre>PYTHONPATH=$PWD/python2.7/linux-x86_86 nosetests
+</pre></div>
+</div>
+<p>For testing purposes several simple command line client tools are provided.
+For further information run:</p>
+<div class="highlight-python"><div class="highlight"><pre>PYTHONPATH=$PWD/python2.7/linux-x86_86 python -m p4p.client.cli -h
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Building</a><ul>
+<li><a class="reference internal" href="#build-from-source">Build from source</a></li>
+<li><a class="reference internal" href="#multiple-python-versions">Multiple Python Versions</a></li>
+<li><a class="reference internal" href="#building-epics-dependencies">Building EPICS dependencies</a></li>
+<li><a class="reference internal" href="#cli-and-unittests">CLI and unittests</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">PVAccess for Python (P4P)</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="values.html"
+                        title="next chapter">Working with Value and Type</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/building.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="values.html" title="Working with Value and Type"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="PVAccess for Python (P4P)"
+             >previous</a> |</li>
+        <li><a href="index.html">P4P 0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2017, Michael Davidsaver.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

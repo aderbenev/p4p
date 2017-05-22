@@ -1,0 +1,375 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Common Types &mdash; P4P 0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="P4P 0 documentation" href="index.html" />
+    <link rel="next" title="Client Blocking API" href="client.html" />
+    <link rel="prev" title="Working with Value and Type" href="values.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="client.html" title="Client Blocking API"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="values.html" title="Working with Value and Type"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">P4P 0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="common-types">
+<h1>Common Types<a class="headerlink" href="#common-types" title="Permalink to this headline">¶</a></h1>
+<p>Helpers for creating standardized <tt class="xref py py-class docutils literal"><span class="pre">Type</span></tt> instances.
+as defined by <a class="reference external" href="http://epics-pvdata.sourceforge.net/alpha/normativeTypes/normativeTypes.html">http://epics-pvdata.sourceforge.net/alpha/normativeTypes/normativeTypes.html</a>
+.</p>
+<p>These helpers have one or more of the following.</p>
+<p>A static method <em>buildType()</em> which returns a <a class="reference internal" href="values.html#p4p.Type" title="p4p.Type"><tt class="xref py py-class docutils literal"><span class="pre">Type</span></tt></a> based on some helper specific conditions.</p>
+<p>An instance of a helper takes the same, or similar, arguments as the <em>buildType()</em>.
+In fact, the result of <em>buildType()</em> is stored in an attribute named <em>type</em>.
+The instance may have a method <em>wrap()</em> which takes some python types and stores them in the returned <a class="reference internal" href="values.html#p4p.Value" title="p4p.Value"><tt class="xref py py-class docutils literal"><span class="pre">Value</span></tt></a>.
+This may be used with the <a class="reference internal" href="rpc.html#p4p.rpc.rpc" title="p4p.rpc.rpc"><tt class="xref py py-class docutils literal"><span class="pre">p4p.rpc.rpc</span></tt></a> decorator to specify the return type.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">p4p.rpc</span> <span class="kn">import</span> <span class="n">rpc</span>
+<span class="k">class</span> <span class="nc">MyRPCServer</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="nd">@rpc</span><span class="p">(</span><span class="n">NTScalar</span><span class="p">(</span><span class="s">&quot;d&quot;</span><span class="p">))</span>
+    <span class="k">def</span> <span class="nf">magicnumber</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="mi">4</span>
+</pre></div>
+</div>
+<p>In this example, the returned <em>4</em> is passed to <a href="#id1"><span class="problematic" id="id2">:method:`NTScalar.wrap`</span></a> which stores it as a double precision float.</p>
+<p>In addition, NT helpers may have one, or more, method unwrap*() which accept a <a class="reference internal" href="values.html#p4p.Value" title="p4p.Value"><tt class="xref py py-class docutils literal"><span class="pre">Value</span></tt></a> and return
+some python value.</p>
+<div class="section" id="automatic-value-unwrapping">
+<span id="unwrap"></span><h2>Automatic Value unwrapping<a class="headerlink" href="#automatic-value-unwrapping" title="Permalink to this headline">¶</a></h2>
+<p>For convenience, various operations including <a class="reference internal" href="client.html#p4p.client.thread.Context.get" title="p4p.client.thread.Context.get"><tt class="xref py py-meth docutils literal"><span class="pre">p4p.client.thread.Context.get()</span></tt></a>
+can automatically transform the returned <a class="reference internal" href="values.html#p4p.Value" title="p4p.Value"><tt class="xref py py-class docutils literal"><span class="pre">Value</span></tt></a>.</p>
+<p>For example, by default a NTScalar with a floating point value becomes <a class="reference internal" href="#p4p.nt.scalar.ntfloat" title="p4p.nt.scalar.ntfloat"><tt class="xref py py-class docutils literal"><span class="pre">scalar.ntfloat</span></tt></a>
+which behaves list the <tt class="xref py py-class docutils literal"><span class="pre">float</span></tt> type with some additional attributes</p>
+<ul class="simple">
+<li>.timestamp - The update timestamp is a float representing seconds since 1 jan 1970 UTC.</li>
+<li>.raw_stamp - A tuple of (seconds, nanoseconds)</li>
+<li>.severity - An integer in the range [0, 3]</li>
+<li>.raw - The complete underlying <a class="reference internal" href="values.html#p4p.Value" title="p4p.Value"><tt class="xref py py-class docutils literal"><span class="pre">Value</span></tt></a></li>
+</ul>
+<div class="section" id="controlling-unwrapping">
+<h3>Controlling Unwrapping<a class="headerlink" href="#controlling-unwrapping" title="Permalink to this headline">¶</a></h3>
+<p>The <em>unwrap</em> argument of client Context controls whether unwrapping is done.
+Possible values are None (the default), False (no unwrapping), or a dict with
+additional/custom unwrappers.</p>
+<p>This dictionary is keyed using the structure ID.
+The value must be a callable which takes one argument,
+which is a <a class="reference internal" href="values.html#p4p.Value" title="p4p.Value"><tt class="xref py py-class docutils literal"><span class="pre">Value</span></tt></a>.</p>
+<p>For example.
+A simplified version of the default NTScalar unwrapping which discards meta-data
+would be.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">C</span><span class="o">=</span><span class="n">Context</span><span class="p">(</span><span class="s">&#39;pva&#39;</span><span class="p">,</span> <span class="n">unwrap</span><span class="o">=</span><span class="p">{</span><span class="s">&quot;epics:nt/NTScalar:1.0&quot;</span><span class="p">:</span><span class="k">lambda</span> <span class="n">V</span><span class="p">:</span><span class="n">V</span><span class="o">.</span><span class="n">value</span><span class="p">})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">C</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;pv:counter&#39;</span><span class="p">)</span>
+<span class="go">5</span>
+</pre></div>
+</div>
+<p>Which extracts the &#8216;value&#8217; field and discards all others.</p>
+<p>To unwrap NTTable as an iterator yielding <tt class="xref py py-class docutils literal"><span class="pre">OrderedDict</span></tt>.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">C</span><span class="o">=</span><span class="n">Context</span><span class="p">(</span><span class="s">&#39;pva&#39;</span><span class="p">,</span> <span class="n">unwrap</span><span class="o">=</span><span class="p">{</span><span class="s">&quot;epics:nt/NTTable:1.0&quot;</span><span class="p">:</span><span class="n">p4p</span><span class="o">.</span><span class="n">nt</span><span class="o">.</span><span class="n">NTTable</span><span class="o">.</span><span class="n">unwrap</span><span class="p">})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">C</span><span class="o">.</span><span class="n">rpc</span><span class="p">(</span><span class="s">&#39;pv:name&#39;</span><span class="p">,</span> <span class="o">....</span><span class="p">):</span>
+<span class="go">     print(row)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="api-reference">
+<h2>API Reference<a class="headerlink" href="#api-reference" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="p4p.nt.NTScalar">
+<em class="property">class </em><tt class="descclassname">p4p.nt.</tt><tt class="descname">NTScalar</tt><big>(</big><em>valtype='d'</em>, <em>**kws</em><big>)</big><a class="headerlink" href="#p4p.nt.NTScalar" title="Permalink to this definition">¶</a></dt>
+<dd><p>Describes a single scalar or array of scalar values and associated meta-data</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">stype</span> <span class="o">=</span> <span class="n">NTScalar</span><span class="o">.</span><span class="n">buildType</span><span class="p">(</span><span class="s">&#39;d&#39;</span><span class="p">)</span> <span class="c"># scalar double</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">V</span> <span class="o">=</span> <span class="n">Value</span><span class="p">(</span><span class="n">stype</span><span class="p">,</span> <span class="p">{</span><span class="s">&#39;value&#39;</span><span class="p">:</span> <span class="mf">4.2</span><span class="p">})</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">stype</span> <span class="o">=</span> <span class="n">NTScalar</span><span class="o">.</span><span class="n">buildType</span><span class="p">(</span><span class="s">&#39;ad&#39;</span><span class="p">)</span> <span class="c"># vector double</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">V</span> <span class="o">=</span> <span class="n">Value</span><span class="p">(</span><span class="n">stype</span><span class="p">,</span> <span class="p">{</span><span class="s">&#39;value&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">4.2</span><span class="p">,</span> <span class="mf">4.3</span><span class="p">]})</span>
+</pre></div>
+</div>
+<dl class="staticmethod">
+<dt id="p4p.nt.NTScalar.buildType">
+<em class="property">static </em><tt class="descname">buildType</tt><big>(</big><em>valtype</em>, <em>extra=[]</em>, <em>display=False</em>, <em>control=False</em>, <em>valueAlarm=False</em><big>)</big><a class="headerlink" href="#p4p.nt.NTScalar.buildType" title="Permalink to this definition">¶</a></dt>
+<dd><p>Build a Type</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>valtype</strong> (<em>str</em>) &#8211; A type code to be used with the &#8216;value&#8217; field.</li>
+<li><strong>extra</strong> (<em>list</em>) &#8211; A list of tuples describing additional non-standard fields</li>
+<li><strong>display</strong> (<em>bool</em>) &#8211; Include optional fields for display meta-data</li>
+<li><strong>control</strong> (<em>bool</em>) &#8211; Include optional fields for control meta-data</li>
+<li><strong>valueAlarm</strong> (<em>bool</em>) &#8211; Include optional fields for alarm level meta-data</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">A <tt class="xref py py-class docutils literal"><span class="pre">Type</span></tt></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="p4p.nt.NTScalar.wrap">
+<tt class="descname">wrap</tt><big>(</big><em>value</em><big>)</big><a class="headerlink" href="#p4p.nt.NTScalar.wrap" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pack python value into Value</p>
+<p>Accepts dict to explicitly initialize fields be name.
+Any other type is assigned to the &#8216;value&#8217; field.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="p4p.nt.NTScalar.unwrap">
+<em class="property">classmethod </em><tt class="descname">unwrap</tt><big>(</big><em>klass</em>, <em>value</em><big>)</big><a class="headerlink" href="#p4p.nt.NTScalar.unwrap" title="Permalink to this definition">¶</a></dt>
+<dd><p>Unpack a Value into an augmented python type (selected from the &#8216;value&#8217; field)</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="p4p.nt.NTMultiChannel">
+<em class="property">class </em><tt class="descclassname">p4p.nt.</tt><tt class="descname">NTMultiChannel</tt><a class="reference internal" href="_modules/p4p/nt.html#NTMultiChannel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#p4p.nt.NTMultiChannel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Describes a structure holding the equivalent of a number of NTScalar</p>
+<dl class="staticmethod">
+<dt id="p4p.nt.NTMultiChannel.buildType">
+<em class="property">static </em><tt class="descname">buildType</tt><big>(</big><em>valtype</em>, <em>extra=[]</em><big>)</big><a class="reference internal" href="_modules/p4p/nt.html#NTMultiChannel.buildType"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#p4p.nt.NTMultiChannel.buildType" title="Permalink to this definition">¶</a></dt>
+<dd><p>Build a Type</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>valtype</strong> (<em>str</em>) &#8211; A type code to be used with the &#8216;value&#8217; field.  Must be an array</li>
+<li><strong>extra</strong> (<em>list</em>) &#8211; A list of tuples describing additional non-standard fields</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">A <tt class="xref py py-class docutils literal"><span class="pre">Type</span></tt></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="p4p.nt.NTTable">
+<em class="property">class </em><tt class="descclassname">p4p.nt.</tt><tt class="descname">NTTable</tt><big>(</big><em>columns=[]</em>, <em>extra=[]</em><big>)</big><a class="reference internal" href="_modules/p4p/nt.html#NTTable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#p4p.nt.NTTable" title="Permalink to this definition">¶</a></dt>
+<dd><p>A generic table</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">table</span> <span class="o">=</span> <span class="n">NTTable</span><span class="o">.</span><span class="n">buildType</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span>
+<span class="go">    (&#39;columnA&#39;, &#39;ai&#39;),</span>
+<span class="go">    (&#39;columnB&#39;, &#39;as&#39;),</span>
+<span class="go">])</span>
+</pre></div>
+</div>
+<dl class="staticmethod">
+<dt id="p4p.nt.NTTable.buildType">
+<em class="property">static </em><tt class="descname">buildType</tt><big>(</big><em>columns=[]</em>, <em>extra=[]</em><big>)</big><a class="reference internal" href="_modules/p4p/nt.html#NTTable.buildType"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#p4p.nt.NTTable.buildType" title="Permalink to this definition">¶</a></dt>
+<dd><p>Build a table</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>columns</strong> (<em>list</em>) &#8211; List of columns</li>
+<li><strong>extra</strong> (<em>list</em>) &#8211; A list of tuples describing additional non-standard fields</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">A <tt class="xref py py-class docutils literal"><span class="pre">Type</span></tt></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="p4p.nt.NTTable.wrap">
+<tt class="descname">wrap</tt><big>(</big><em>values</em><big>)</big><a class="reference internal" href="_modules/p4p/nt.html#NTTable.wrap"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#p4p.nt.NTTable.wrap" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pack an iterable of dict into a Value</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">T</span><span class="o">=</span><span class="n">NTTable</span><span class="p">([(</span><span class="s">&#39;A&#39;</span><span class="p">,</span> <span class="s">&#39;ai&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s">&#39;B&#39;</span><span class="p">,</span> <span class="s">&#39;as&#39;</span><span class="p">)])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">V</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">wrap</span><span class="p">([</span>
+<span class="go">    {&#39;A&#39;:42, &#39;B&#39;:&#39;one&#39;},</span>
+<span class="go">    {&#39;A&#39;:43, &#39;B&#39;:&#39;two&#39;},</span>
+<span class="go">])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="p4p.nt.NTTable.unwrap">
+<em class="property">static </em><tt class="descname">unwrap</tt><big>(</big><em>value</em><big>)</big><a class="reference internal" href="_modules/p4p/nt.html#NTTable.unwrap"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#p4p.nt.NTTable.unwrap" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterate an NTTable</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">An iterator yielding an OrderedDict for each column</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="p4p.nt.NTURI">
+<em class="property">class </em><tt class="descclassname">p4p.nt.</tt><tt class="descname">NTURI</tt><big>(</big><em>args</em><big>)</big><a class="reference internal" href="_modules/p4p/nt.html#NTURI"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#p4p.nt.NTURI" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="staticmethod">
+<dt id="p4p.nt.NTURI.buildType">
+<em class="property">static </em><tt class="descname">buildType</tt><big>(</big><em>args</em><big>)</big><a class="reference internal" href="_modules/p4p/nt.html#NTURI.buildType"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#p4p.nt.NTURI.buildType" title="Permalink to this definition">¶</a></dt>
+<dd><p>Build NTURI</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>args</strong> (<em>list</em>) &#8211; A list of tuples of query argument name and type code.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="p4p.nt.NTURI.wrap">
+<tt class="descname">wrap</tt><big>(</big><em>path</em>, <em>args</em>, <em>scheme=''</em>, <em>authority=''</em><big>)</big><a class="reference internal" href="_modules/p4p/nt.html#NTURI.wrap"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#p4p.nt.NTURI.wrap" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="p4p.nt.scalar.ntfloat">
+<em class="property">class </em><tt class="descclassname">p4p.nt.scalar.</tt><tt class="descname">ntfloat</tt><a class="reference internal" href="_modules/p4p/nt/scalar.html#ntfloat"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#p4p.nt.scalar.ntfloat" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="class">
+<dt id="p4p.nt.scalar.ntint">
+<em class="property">class </em><tt class="descclassname">p4p.nt.scalar.</tt><tt class="descname">ntint</tt><a class="reference internal" href="_modules/p4p/nt/scalar.html#ntint"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#p4p.nt.scalar.ntint" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="class">
+<dt id="p4p.nt.scalar.ntstr">
+<em class="property">class </em><tt class="descclassname">p4p.nt.scalar.</tt><tt class="descname">ntstr</tt><a class="reference internal" href="_modules/p4p/nt/scalar.html#ntstr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#p4p.nt.scalar.ntstr" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="class">
+<dt id="p4p.nt.scalar.ntnumericarray">
+<em class="property">class </em><tt class="descclassname">p4p.nt.scalar.</tt><tt class="descname">ntnumericarray</tt><a class="reference internal" href="_modules/p4p/nt/scalar.html#ntnumericarray"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#p4p.nt.scalar.ntnumericarray" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="class">
+<dt id="p4p.nt.scalar.ntstringarray">
+<em class="property">class </em><tt class="descclassname">p4p.nt.scalar.</tt><tt class="descname">ntstringarray</tt><a class="reference internal" href="_modules/p4p/nt/scalar.html#ntstringarray"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#p4p.nt.scalar.ntstringarray" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Common Types</a><ul>
+<li><a class="reference internal" href="#automatic-value-unwrapping">Automatic Value unwrapping</a><ul>
+<li><a class="reference internal" href="#controlling-unwrapping">Controlling Unwrapping</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#api-reference">API Reference</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="values.html"
+                        title="previous chapter">Working with Value and Type</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="client.html"
+                        title="next chapter">Client Blocking API</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/nt.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="client.html" title="Client Blocking API"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="values.html" title="Working with Value and Type"
+             >previous</a> |</li>
+        <li><a href="index.html">P4P 0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2017, Michael Davidsaver.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

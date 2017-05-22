@@ -1,0 +1,278 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Server API &mdash; P4P 0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="P4P 0 documentation" href="index.html" />
+    <link rel="next" title="RPC Server Helpers" href="rpc.html" />
+    <link rel="prev" title="Client Blocking API" href="client.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="rpc.html" title="RPC Server Helpers"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="client.html" title="Client Blocking API"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">P4P 0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="server-api">
+<h1>Server API<a class="headerlink" href="#server-api" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="running-a-pva-server">
+<h2>Running a PVA Server<a class="headerlink" href="#running-a-pva-server" title="Permalink to this headline">¶</a></h2>
+<p>The <a class="reference internal" href="#p4p.server.Server" title="p4p.server.Server"><tt class="xref py py-class docutils literal"><span class="pre">Server</span></tt></a> starts/stops a PVAccess server.
+However, by itself a server is not useful.
+One or more Providers must be named to give the server
+a useful function.</p>
+</div>
+<div class="section" id="provider-interface">
+<h2>Provider Interface<a class="headerlink" href="#provider-interface" title="Permalink to this headline">¶</a></h2>
+<p>A Provider class will define some, or all, of the following:</p>
+<dl class="class">
+<dt id="p4p.server.Provider">
+<em class="property">class </em><tt class="descclassname">p4p.server.</tt><tt class="descname">Provider</tt><a class="headerlink" href="#p4p.server.Provider" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="p4p.server.Provider.testChannel">
+<tt class="descname">testChannel</tt><big>(</big><em>pvname</em><big>)</big><a class="headerlink" href="#p4p.server.Provider.testChannel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called with a PV name which some client is searching for.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">True to claim this PV.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">makeChannel(pvname, src):</tt></dt>
+<dd><p>Called when a client attempts to create a Channel for some PV.
+The object which is returned will not be collected until
+the client closes the Channel or becomes disconnected.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">An object which implements the Channel Interface, or None to disclaim this PV.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="p4p.server.Channel">
+<em class="property">class </em><tt class="descclassname">p4p.server.</tt><tt class="descname">Channel</tt><a class="headerlink" href="#p4p.server.Channel" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="p4p.server.Channel.rpc">
+<tt class="descname">rpc</tt><big>(</big><em>response</em>, <em>request</em><big>)</big><a class="headerlink" href="#p4p.server.Channel.rpc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called each time a client issues a Remote Procedure Call
+operation on this Channel.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>RPCReply</strong> (<em>response</em>) &#8211; Use this to send the reply</li>
+<li><strong>Value</strong> (<em>request</em>) &#8211; The raw arguments</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="example-rpc-provider">
+<h2>Example RPC Provider<a class="headerlink" href="#example-rpc-provider" title="Permalink to this headline">¶</a></h2>
+<p>See the <tt class="xref py py-mod docutils literal"><span class="pre">rpc</span></tt> module for more functional RPC handling and dispatch.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">p4p.nt</span> <span class="kn">import</span> <span class="n">NTScalar</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">ExampleProvider</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="go">        def __init__(self, myname):</span>
+<span class="go">            self.name = name</span>
+<span class="go">            # we</span>
+<span class="go">            self.addret = NTScalar.buildType(&#39;d&#39;)</span>
+<span class="go">        def testChannel(self, name):</span>
+<span class="go">            return name==self.name</span>
+<span class="go">        def makeChannel(self, name, src):</span>
+<span class="go">            # we need no per-channel state, so re-use the provider as the channel</span>
+<span class="go">            return self is name==self.name else None</span>
+<span class="go">        def rpc(self, response, request):</span>
+<span class="go">            # Real scalable provider will do this from a worker thread</span>
+<span class="go">            V = Value(self.addret, {</span>
+<span class="go">                &#39;value&#39;: float(request.query.lhs) + float(request.query.rhs),</span>
+<span class="go">            })</span>
+<span class="go">            response.done(reply=V)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="api-reference">
+<h2>API Reference<a class="headerlink" href="#api-reference" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="p4p.server.Server">
+<em class="property">class </em><tt class="descclassname">p4p.server.</tt><tt class="descname">Server</tt><big>(</big><em>*args</em>, <em>**kws</em><big>)</big><a class="reference internal" href="_modules/p4p/server.html#Server"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#p4p.server.Server" title="Permalink to this definition">¶</a></dt>
+<dd><p>Server(conf=None, useenv=True, providers=&#8221;&#8221;)</p>
+<p>Run a PVAccess server serving Channels from the listed providers</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">S</span> <span class="o">=</span> <span class="n">Server</span><span class="p">(</span><span class="n">providers</span><span class="o">=</span><span class="s">&quot;example&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">S</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c"># do something else</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">S</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+</pre></div>
+</div>
+<dl class="method">
+<dt id="p4p.server.Server.start">
+<tt class="descname">start</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/p4p/server.html#Server.start"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#p4p.server.Server.start" title="Permalink to this definition">¶</a></dt>
+<dd><p>Start running the PVA server</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="p4p.server.Server.stop">
+<tt class="descname">stop</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/p4p/server.html#Server.stop"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#p4p.server.Server.stop" title="Permalink to this definition">¶</a></dt>
+<dd><p>Stop the server and block until this is done</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="p4p.server.installProvider">
+<tt class="descclassname">p4p.server.</tt><tt class="descname">installProvider</tt><big>(</big><em>&quot;name&quot;</em>, <em>provider</em><big>)</big><a class="headerlink" href="#p4p.server.installProvider" title="Permalink to this definition">¶</a></dt>
+<dd><p>Install a new Server Channel provider</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="p4p.server.removeProvider">
+<tt class="descclassname">p4p.server.</tt><tt class="descname">removeProvider</tt><big>(</big><em>&quot;name&quot;</em><big>)</big><a class="headerlink" href="#p4p.server.removeProvider" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove a previously added Server Channel provider</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="p4p.server.clearProviders">
+<tt class="descclassname">p4p.server.</tt><tt class="descname">clearProviders</tt><big>(</big><big>)</big><a class="headerlink" href="#p4p.server.clearProviders" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove all Server Channel providers</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="p4p.server.RPCReply">
+<em class="property">class </em><tt class="descclassname">p4p.server.</tt><tt class="descname">RPCReply</tt><a class="headerlink" href="#p4p.server.RPCReply" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="p4p.server.RPCReply.done">
+<tt class="descname">done</tt><big>(</big><em>reply=Value</em><big>)</big><a class="headerlink" href="#p4p.server.RPCReply.done" title="Permalink to this definition">¶</a></dt>
+<dd><p>done(error=&#8221;oops&#8221;)
+Complete RPC call with reply data or error message</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Server API</a><ul>
+<li><a class="reference internal" href="#running-a-pva-server">Running a PVA Server</a></li>
+<li><a class="reference internal" href="#provider-interface">Provider Interface</a></li>
+<li><a class="reference internal" href="#example-rpc-provider">Example RPC Provider</a></li>
+<li><a class="reference internal" href="#api-reference">API Reference</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="client.html"
+                        title="previous chapter">Client Blocking API</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="rpc.html"
+                        title="next chapter">RPC Server Helpers</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/server.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="rpc.html" title="RPC Server Helpers"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="client.html" title="Client Blocking API"
+             >previous</a> |</li>
+        <li><a href="index.html">P4P 0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2017, Michael Davidsaver.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>
